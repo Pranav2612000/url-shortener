@@ -9,3 +9,5 @@ edition = "2021"
 rocket = { version = "0.5.0-rc.1", features = ["json"] }
 shuttle-rocket = { version = "0.15.0" }
 shuttle-runtime = { version = "0.15.0" }
+serde = "1.0.148"
+tokio = { version = "1.26.0" }
