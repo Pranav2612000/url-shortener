@@ -10,7 +10,7 @@ fn knockknock() -> &'static str {
 
 #[shuttle_service::main]
 async fn init() -> Result<Rocket<Build>, shuttle_service::Error> {
-    let rocket = rocket.build().mount("/", routes![knockknock]);
+    let rocket = rocket::build().mount("/", routes![knockknock]);
 
-    Ok(rocket);
+    Ok(rocket)
 }
