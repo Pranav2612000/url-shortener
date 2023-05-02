@@ -12,5 +12,5 @@ fn knockknock() -> &'static str {
 async fn init() -> Result<Rocket<Build>, shuttle_service::Error> {
     let rocket = rocket::build().mount("/", routes![knockknock]);
 
-    Ok(rocket)
+    Ok(rocket.into())
 }
