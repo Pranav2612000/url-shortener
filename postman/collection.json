@@ -1,0 +1,66 @@
+{
+	"info": {
+		"_postman_id": "8addb09f-68d6-49d8-b207-2f1bc12cdf06",
+		"name": "Shuttle URL Shortener",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "14160759",
+		"_collection_link": "https://pranavs-personal-team.postman.co/workspace/Pranav's-Personal-Workspace~e032bcc9-4402-4bc8-8019-452cc4c0d9e1/collection/14160759-8addb09f-68d6-49d8-b207-2f1bc12cdf06?action=share&creator=14160759&source=collection_link"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/knockknock",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"knockknock"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Shorten URL",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "https://google.com"
+				},
+				"url": {
+					"raw": "{{url}}/",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Redirect to URL",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/fE8GaH",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"fE8GaH"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
