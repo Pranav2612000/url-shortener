@@ -3,21 +3,48 @@ extern crate rocket;
 
 use rocket::{
     http::Status,
-    response::{status},
+    response::{status, Redirect},
     State,
 };
 use shuttle_runtime::CustomError;
 use sqlx::migrate::Migrator;
-use sqlx::{PgPool};
+use sqlx::{PgPool, FromRow};
 use url::Url;
+use serde::Serialize;
 
 struct AppState {
     pool: PgPool,
 }
 
+#[derive(Serialize, FromRow)]
+struct StoredURL {
+    pub id: String,
+    pub url: String,
+}
+
 #[get("/knockknock")]
 fn knockknock() -> &'static str {
     "Who's there?"
+}
+
+#[get("/<id>")]
+async fn redirect(id: String, state: &State<AppState>) -> Result<Redirect, status::Custom<String>> {
+    let stored_url: StoredURL = sqlx::query_as("SELECT * from urls where id = $1")
+        .bind(id)
+        .fetch_one(&state.pool)
+        .await
+        .map_err(|err| match err {
+            sqlx::Error::RowNotFound => status::Custom(
+                Status::NotFound,
+                "The requested shortened url does not exist".into(),
+            ),
+            _ => status::Custom(
+                Status::InternalServerError,
+                "Something went wrong. Please try again".into(),
+           ) 
+        })?;
+
+    Ok(Redirect::to(stored_url.url))
 }
 
 #[post("/", data = "<url>")]
@@ -53,7 +80,7 @@ async fn init(#[shuttle_shared_db::Postgres] pool: PgPool) -> shuttle_rocket::Sh
     MIGRATOR.run(&pool).await.map_err(CustomError::new)?;
 
     let state = AppState { pool };
-    let rocket = rocket::build().mount("/", routes![knockknock, shorten])
+    let rocket = rocket::build().mount("/", routes![knockknock, shorten, redirect])
         .manage(state);
 
     Ok(rocket.into())
