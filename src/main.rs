@@ -10,13 +10,13 @@ use shuttle_runtime::CustomError;
 use sqlx::migrate::Migrator;
 use sqlx::{PgPool, FromRow};
 use url::Url;
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 
 struct AppState {
     pool: PgPool,
 }
 
-#[derive(Serialize, FromRow)]
+#[derive(Serialize, Deserialize, FromRow)]
 struct StoredURL {
     pub id: String,
     pub url: String,
@@ -25,6 +25,23 @@ struct StoredURL {
 #[get("/knockknock")]
 fn knockknock() -> &'static str {
     "Who's there?"
+}
+
+#[get("/x/urls")]
+async fn get_all(state: &State<AppState>) -> Result<String, status::Custom<String>> {
+    let stored_urls: Vec<StoredURL> = sqlx::query_as("SELECT * from urls")
+        .fetch_all(&state.pool)
+        .await
+        .map_err(|_| {
+            status::Custom(
+                Status::InternalServerError,
+                "Something went wrong. Please try again".into(),
+           )
+        })?;
+
+    let response = serde_json::to_string(&stored_urls).unwrap();
+
+    Ok(response)
 }
 
 #[get("/<id>")]
@@ -80,7 +97,7 @@ async fn init(#[shuttle_shared_db::Postgres] pool: PgPool) -> shuttle_rocket::Sh
     MIGRATOR.run(&pool).await.map_err(CustomError::new)?;
 
     let state = AppState { pool };
-    let rocket = rocket::build().mount("/", routes![knockknock, shorten, redirect])
+    let rocket = rocket::build().mount("/", routes![knockknock, shorten, redirect, get_all])
         .manage(state);
 
     Ok(rocket.into())
