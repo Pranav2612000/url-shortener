@@ -69,7 +69,12 @@ async fn shorten(input: String, state: &State<AppState>) -> Result<String, statu
     let stored_url:StoredURL = serde_json::from_str(&input).unwrap();
 
     let url = stored_url.url;
-    let id = &nanoid::nanoid!(6);
+    let id = match stored_url.id {
+        Some(id) => id,
+        None => {
+            nanoid::nanoid!(6)
+        }
+    };
 
     let parsed_url = Url::parse(&url).map_err(|err| {
         status::Custom(
@@ -79,7 +84,7 @@ async fn shorten(input: String, state: &State<AppState>) -> Result<String, statu
     })?;
 
     sqlx::query("INSERT INTO urls(id, url) VALUES ($1, $2)")
-        .bind(id)
+        .bind(&id)
         .bind(parsed_url.as_str())
         .execute(&state.pool)
         .await
