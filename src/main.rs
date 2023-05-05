@@ -64,8 +64,11 @@ async fn redirect(id: String, state: &State<AppState>) -> Result<Redirect, statu
     Ok(Redirect::to(stored_url.url))
 }
 
-#[post("/", data = "<url>")]
-async fn shorten(url: String, state: &State<AppState>) -> Result<String, status::Custom<String>> {
+#[post("/", data = "<input>")]
+async fn shorten(input: String, state: &State<AppState>) -> Result<String, status::Custom<String>> {
+    let stored_url:StoredURL = serde_json::from_str(&input).unwrap();
+
+    let url = stored_url.url;
     let id = &nanoid::nanoid!(6);
 
     let parsed_url = Url::parse(&url).map_err(|err| {
