@@ -18,7 +18,7 @@ struct AppState {
 
 #[derive(Serialize, Deserialize, FromRow)]
 struct StoredURL {
-    pub id: String,
+    pub id: Option<String>,
     pub url: String,
 }
 
