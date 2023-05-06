@@ -27,6 +27,21 @@ fn knockknock() -> &'static str {
     "Who's there?"
 }
 
+#[delete("/x/urls")]
+async fn clear_all_urls(state: &State<AppState>) -> Result<String, status::Custom<String>> {
+    sqlx::query("DELETE from urls")
+        .execute(&state.pool)
+        .await
+        .map_err(|_| {
+            status::Custom(
+                Status::InternalServerError,
+                "Something went wrong. Please try again".into()
+            )
+        })?;
+
+    Ok(format!("Deletion successful"))
+}
+
 #[get("/x/urls")]
 async fn get_all(state: &State<AppState>) -> Result<String, status::Custom<String>> {
     let stored_urls: Vec<StoredURL> = sqlx::query_as("SELECT * from urls")
@@ -105,7 +120,7 @@ async fn init(#[shuttle_shared_db::Postgres] pool: PgPool) -> shuttle_rocket::Sh
     MIGRATOR.run(&pool).await.map_err(CustomError::new)?;
 
     let state = AppState { pool };
-    let rocket = rocket::build().mount("/", routes![knockknock, shorten, redirect, get_all])
+    let rocket = rocket::build().mount("/", routes![knockknock, shorten, redirect, get_all, clear_all_urls])
         .manage(state);
 
     Ok(rocket.into())
